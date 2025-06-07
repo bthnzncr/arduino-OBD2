@@ -1,8 +1,17 @@
 // Copyright (c) Sandeep Mistry. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
-
-#ifndef OBD2_H
-#define OBD2_H
+// 
+// ESP32 Enhanced Version - Copyright (c) 2024 Batuhan Zencir
+// Enhanced with:
+// - Advanced DTC (Diagnostic Trouble Code) support
+// - Extended 29-bit CAN addressing
+// - Multi-frame message handling improvements
+// - Enhanced error handling and robustness
+//
+// Based on the original arduino-OBD2 library by Sandeep Mistry
+// Original: https://github.com/sandeepmistry/arduino-OBD2
+#ifndef ESP32_OBD2_H
+#define ESP32_OBD2_H
 
 enum {
   PIDS_SUPPORT_01_20                                = 0x00,
@@ -57,7 +66,7 @@ enum {
   WARM_UPS_SINCE_CODES_CLEARED                      = 0x30,
   DISTANCE_TRAVELED_SINCE_CODES_CLEARED             = 0x31,
   EVAP_SYSTEM_VAPOR_PRESSURE                        = 0x32,
-  ABSOLULTE_BAROMETRIC_PRESSURE                     = 0x33,
+  ABSOLUTE_BAROMETRIC_PRESSURE                     = 0x33,
 /*OXYGEN_SENSOR_1_FUEL_AIR_EQUIVALENCE_RATIO        = 0x34,
   OXYGEN_SENSOR_2_FUEL_AIR_EQUIVALENCE_RATIO        = 0x35,
   OXYGEN_SENSOR_3_FUEL_AIR_EQUIVALENCE_RATIO        = 0x36,
@@ -112,6 +121,11 @@ enum {
 
 class OBD2Class {
 public:
+  struct DTCEntry {
+    const char* code;         // Diagnostic Trouble Code (e.g., "P0001")
+    const char* description;  // Description of the code
+  };
+
   OBD2Class();
   virtual ~OBD2Class();
 
@@ -128,21 +142,28 @@ public:
 
   String vinRead();
   String ecuNameRead();
+  String dtcRead();
+  int clearDTC(void* data);
+  // DTC lookup function
+  const char* getDTCDescription(const char* code);
 
   void setTimeout(unsigned long timeout);
 
-  int clearAllStoredDTC();
+  // Get current addressing mode
+  bool isUsingExtendedAddressing() const { return _useExtendedAddressing; }
 
 private:
   int supportedPidsRead();
-
   int pidRead(uint8_t mode, uint8_t pid, void* data, int length);
-
-private:
+  int pidReadForDtc(uint8_t mode, void* data, int length);
   unsigned long _responseTimeout;
-  bool _useExtendedAddressing;
+  bool _useExtendedAddressing;  // Flag to indicate if using 29-bit extended addressing
   unsigned long _lastPidResponseMillis;
   uint32_t _supportedPids[32];
+
+  // DTC lookup table
+  static const DTCEntry DTC[] PROGMEM;
+  static const int DTC_ENTRY_COUNT;
 };
 
 extern OBD2Class OBD2;

@@ -1,8 +1,9 @@
 // Copyright (c) Sandeep Mistry. All rights reserved.
+// Copyright (c) 2025 Batuhan Zencir (ESP32 modifications and enhancements)
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
-#include <CAN.h> // the OBD2 library depends on the CAN library
-#include <OBD2.h>
+#include <esp32_can.h> // the OBD2 library depends on the CAN library
+#include <esp32_obd2.h>
 
 // array of PID's to print values of
 const int PIDS[] = {
@@ -15,7 +16,7 @@ const int PIDS[] = {
   THROTTLE_POSITION,
   RUN_TIME_SINCE_ENGINE_START,
   FUEL_TANK_LEVEL_INPUT,
-  ABSOLULTE_BAROMETRIC_PRESSURE,
+  ABSOLUTE_BAROMETRIC_PRESSURE,
   ABSOLUTE_LOAD_VALUE,
   RELATIVE_THROTTLE_POSITION
 };
@@ -40,6 +41,14 @@ void setup() {
       break;
     }
   }
+
+  String vin = OBD2.vinRead();
+  Serial.print(F("VIN: "));
+  Serial.println(vin);
+
+  String ecuName = OBD2.ecuNameRead();
+  Serial.print(F("ECU Name: "));
+  Serial.println(ecuName);
 
   Serial.println();
 }

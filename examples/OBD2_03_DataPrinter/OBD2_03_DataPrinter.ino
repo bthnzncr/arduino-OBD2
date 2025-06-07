@@ -1,8 +1,9 @@
 // Copyright (c) Sandeep Mistry. All rights reserved.
+// Copyright (c) 2025 Batuhan Zencir (ESP32 modifications and enhancements)
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
-#include <CAN.h> // the OBD2 library depends on the CAN library
-#include <OBD2.h>
+#include <esp32_can.h> // the OBD2 library depends on the CAN library
+#include <esp32_obd2.h>
 
 void setup() {
   Serial.begin(9600);
@@ -28,7 +29,22 @@ void setup() {
   Serial.println(OBD2.vinRead());
   Serial.print("ECU Name = ");
   Serial.println(OBD2.ecuNameRead());
-  Serial.println();
+
+  String dtcCodes = OBD2.dtcRead();
+  if (dtcCodes.length() > 0) {
+    Serial.print(F("Stored DTCs: "));
+    Serial.println(dtcCodes);
+
+    // Example of looking up a DTC code description.
+
+    const char* description = OBD2.getDTCDescription("P0001");
+    if (description) {
+      Serial.print(F("Description for P0001: "));
+      Serial.println(description);
+    }
+  } else {
+    Serial.println(F("No DTCs found."));
+  }
 }
 
 void loop() {
